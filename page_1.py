@@ -1,38 +1,59 @@
 
 import os
-from pathlib import Path
-
 import streamlit as st
+from pathlib import Path
 from dotenv import load_dotenv
+
+from langchain_tavily import TavilySearch
+from langchain.agents import create_agent
 from langchain.chat_models import init_chat_model
 
-# 1. .env 파일 불러오기
-env_path = Path(__file__).resolve().parent / ".env"
-load_dotenv(dotenv_path=env_path)
+# .env 파일 불러오기 (추가)
+load_dotenv(Path(__file__).resolve().parent / ".env")
 
-# 2. OpenAI API 키 가져오기
-api_key = os.getenv("OPENAI_API_KEY")
-
-# 3. API 키 존재 여부 확인
-if not api_key:
-    st.error("OPENAI_API_KEY를 찾을 수 없습니다.")
+# API 키 확인 (추가)
+if not os.getenv("OPENAI_API_KEY"):
+    st.error("OpenAI API 키가 없습니다.")
     st.stop()
 
-# 4. LangChain 모델 객체 생성
-model = init_chat_model(
-    "gpt-5.4-mini",
-    model_provider="openai",
-    api_key=api_key
+if not os.getenv("TAVILY_API_KEY"):
+    st.error("Tavily API 키가 없습니다.")
+    st.stop()
+
+# 모델 객체
+model = init_chat_model("gpt-5.4-mini")
+
+# Tavily 검색 도구
+tavily_tool = TavilySearch(
+    max_results=5,
+    topic="general",
 )
 
-st.title("AI 챗봇")
+# Agent 생성
+agent = create_agent(model, tools=[tavily_tool])
 
-prompt = st.chat_input("질문을 입력하세요.")
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+st.title("우리 회사 챗봇")
+
+prompt = st.chat_input("여기에 입력하시오.")
 
 if prompt:
-    with st.chat_message("user"):
-        st.write(prompt)
+    response = agent.invoke(
+        {"messages": [{"role": "user", "content": prompt}]}
+    )
 
-    with st.chat_message("assistant"):
-        response = model.invoke(prompt)
-        st.write(response.content)
+    st.session_state.messages.append({
+        "role": "user",
+        "content": prompt
+    })
+
+    st.session_state.messages.append({
+        "role": "assistant",
+        "content": response["messages"][-1].content
+    })
+
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.write(message["content"])

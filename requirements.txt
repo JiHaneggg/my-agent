@@ -30,6 +30,7 @@ langchain-community==0.4.2
 langchain-core==1.7.3
 langchain-openai==1.7.3
 langchain-protocol==0.0.20
+langchain-tavily==0.2.18
 langchain-text-splitters==1.1.3
 langgraph==1.2.19
 langgraph-checkpoint==4.3.1
