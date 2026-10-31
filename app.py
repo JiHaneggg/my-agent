@@ -1,22 +1,10 @@
 
 import streamlit as st
 
-st.set_page_config(
-    page_title="My Agent",
-    page_icon="🤖",
-    layout="wide"
-)
+page_1 = st.Page("page_1.py", title = '1페이지')
+page_2 = st.Page("page_2.py", title = '2페이지')
+page_3 = st.Page("page_3.py", title = '3페이지')
 
-st.title("🤖 My Agent")
-st.write("나만의 AI Agent 프로젝트")
+pages = st.navigation([page_1, page_2, page_3], position='top')
 
-st.divider()
-
-user_input = st.text_input("질문을 입력하세요")
-
-if st.button("실행"):
-    if user_input.strip():
-        st.success("입력 완료!")
-        st.write(f"입력한 질문: {user_input}")
-    else:
-        st.warning("질문을 먼저 입력해주세요.")
+pages.run()
